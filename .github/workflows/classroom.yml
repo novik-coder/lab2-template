@@ -2,10 +2,14 @@ name: GitHub Classroom Workflow
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
+permissions:
+   checks: write
+   actions: read
+   contents: read
 jobs:
   build:
     name: Autograding
@@ -14,7 +18,18 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
+      # 添加 Java 设置
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - uses: docker/setup-buildx-action@v2
+      
+       # Maven 构建
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
       - uses: docker/setup-buildx-action@v2
 
       # TODO build and run unit tests
@@ -22,15 +37,50 @@ jobs:
       - name: Build images
         timeout-minutes: 10
         run: docker compose build
+        # 添加权限设置
+      - name: Make wait script executable
+        run: |
+          chmod +x ./scripts/wait-script.sh
+          chmod +x ./scripts/wait-for.sh
 
       - name: Run containers
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: |
           docker compose up -d
+          sleep 30
+          echo "Starting wait script..."
           ./scripts/wait-script.sh
         env:
           WAIT_PORTS: 8080,8070,8060,8050
+      - name: Check Database Status
+        run: |
+          # 列出所有数据库
+          PGPASSWORD=postgres docker compose exec -T postgres psql -U postgres -c "\l"
+          
+          # 列出所有用户
+          PGPASSWORD=postgres docker compose exec -T postgres psql -U postgres -c "\du"
+          
+          # 切换到 libraries 数据库并列出所有表
+          PGPASSWORD=postgres docker compose exec -T postgres psql -U postgres -d libraries -c "\dt"
 
+      - name: Verify Database Data
+        run: |
+             # 连接到 libraries 数据库并查询数据
+             PGPASSWORD=test docker compose exec -T postgres psql -U program -d libraries -c "SELECT * FROM library;"
+             PGPASSWORD=test docker compose exec -T postgres psql -U program -d libraries -c "SELECT * FROM books;"
+             PGPASSWORD=test  docker compose exec -T postgres psql -U program -d libraries -c "SELECT * FROM library_books;"
+      - name: Check Services Status
+        run: |
+            echo "Checking Docker containers status..."
+            docker compose ps
+            
+            echo "Checking Eureka status..."
+            curl -v http://localhost:8761/eureka/apps
+      - name: Wait for services to be ready
+        run: |
+            echo "Waiting 3 minutes for services to be fully initialized..."
+            sleep 180  # 等待4分钟 (180秒)
+     
       - name: Run API Tests
         uses: matt-ball/newman-action@master
         with:
