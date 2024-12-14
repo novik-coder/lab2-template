@@ -22,12 +22,12 @@
     </properties>
 
     <modules>
-        <module>discovery-service</module>
-        <module>gateway-service</module>
-        <module>reservation-service</module>
-        <module>library-service</module>
-        <module>rating-service</module>
-        <module>common-servcie</module>
+        <module>src/discovery-service</module>
+        <module>src/gateway-service</module>
+        <module>src/reservation-service</module>
+        <module>src/library-service</module>
+        <module>src/rating-service</module>
+        <module>src/common-servcie</module>
     </modules>
 
     <dependencyManagement>
