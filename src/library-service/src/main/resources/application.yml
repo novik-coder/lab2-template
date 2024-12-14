@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: library-service
+  datasource:
+    url: jdbc:postgresql://156.241.128.83:5432/libraries
+    username: program
+    password: test
+    driver-class-name: org.postgresql.Driver
+    jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true
+      format_sql: true
+      properties:
+        logging:
+          level:
+            org:
+              hibernate:
+                SQL: DEBUG
+                type:
+                  descriptor:
+                    sql: TRACE
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+server:
+  port: 8060
+logging:
+  level:
+    org.hibernate.SQL: DEBUG             # 打印SQL语句
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # 打印参数绑定
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://eureka-server:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+      base-path: /manage
+  endpoint:
+    health:
+      show-details: always
