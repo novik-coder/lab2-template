@@ -1,9 +1,10 @@
-version: "3"
+version: '3.3'
+
 services:
   postgres:
     image: library/postgres:13
-    container_name: postgres
-    restart: on-failure
+    container_name: postgres_lab2
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "postgres"
@@ -13,8 +14,102 @@ services:
       - ./postgres/:/docker-entrypoint-initdb.d/
     ports:
       - "5432:5432"
+    networks:
+      - microservice-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d postgres -U postgres"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
-# TODO добавить сервисы
+  eureka-server:
+    build:
+      context: ./discovery-service
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - microservice-network
+    restart: always
+
+  gateway:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - microservice-network
+    restart: always
+
+  reservation-service:
+    build:
+      context: ./reservation-service
+      dockerfile: Dockerfile
+    container_name: reservation-service
+    ports:
+      - "8070:8070"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - DATABASE_HOST=postgres
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - microservice-network
+    restart: always
+
+  library-service:
+    build:
+      context: ./library-service
+      dockerfile: Dockerfile
+    container_name: library-service
+    ports:
+      - "8060:8060"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - DATABASE_HOST=postgres
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - microservice-network
+    restart: always
+
+  rating-service:
+    build:
+      context: ./rating-service
+      dockerfile: Dockerfile
+    container_name: rating-service
+    ports:
+      - "8050:8050"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - DATABASE_HOST=postgres
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - microservice-network
+    restart: always
+
+networks:
+  microservice-network:
+    driver: bridge
 
 volumes:
   db-data:
