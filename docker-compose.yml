@@ -25,7 +25,7 @@ services:
 
   eureka-server:
     build:
-      context: ./discovery-service
+      context: ./src/discovery-service
       dockerfile: Dockerfile
     container_name: eureka-server
     ports:
@@ -38,7 +38,7 @@ services:
 
   gateway:
     build:
-      context: ./gateway-service
+      context: ./src/gateway-service
       dockerfile: Dockerfile
     container_name: gateway
     ports:
@@ -55,7 +55,7 @@ services:
 
   reservation-service:
     build:
-      context: ./reservation-service
+      context: ./src/reservation-service
       dockerfile: Dockerfile
     container_name: reservation-service
     ports:
@@ -73,7 +73,7 @@ services:
 
   library-service:
     build:
-      context: ./library-service
+      context: ./src/library-service
       dockerfile: Dockerfile
     container_name: library-service
     ports:
@@ -91,7 +91,7 @@ services:
 
   rating-service:
     build:
-      context: ./rating-service
+      context: ./src/rating-service
       dockerfile: Dockerfile
     container_name: rating-service
     ports:
