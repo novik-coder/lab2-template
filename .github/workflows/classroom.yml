@@ -49,6 +49,35 @@ jobs:
           ./scripts/wait-script.sh
         env:
           WAIT_PORTS: 8080,8070,8060,8050
+     
+      - name: Check Database Status
+        run: |
+          # 列出所有数据库
+          PGPASSWORD=postgres docker compose exec -T postgres psql -U postgres -c "\l"
+          
+          # 列出所有用户
+          PGPASSWORD=postgres docker compose exec -T postgres psql -U postgres -c "\du"
+          
+          # 切换到 libraries 数据库并列出所有表
+          PGPASSWORD=postgres docker compose exec -T postgres psql -U postgres -d libraries -c "\dt"
+
+      - name: Verify Database Data
+        run: |
+             # 连接到 libraries 数据库并查询数据
+             PGPASSWORD=test docker compose exec -T postgres psql -U program -d libraries -c "SELECT * FROM library;"
+             PGPASSWORD=test docker compose exec -T postgres psql -U program -d libraries -c "SELECT * FROM books;"
+             PGPASSWORD=test  docker compose exec -T postgres psql -U program -d libraries -c "SELECT * FROM library_books;"
+      - name: Check Services Status
+        run: |
+            echo "Checking Docker containers status..."
+            docker compose ps
+            
+            echo "Checking Eureka status..."
+            curl -v http://localhost:8761/eureka/apps
+      - name: Wait for services to be ready
+        run: |
+            echo "Waiting 3 minutes for services to be fully initialized..."
+            sleep 180  # 等待4分钟 (180秒)
 
       - name: Run API Tests
         uses: matt-ball/newman-action@master
