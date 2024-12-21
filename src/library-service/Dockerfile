@@ -11,4 +11,4 @@ COPY target/library-service-1.0-SNAPSHOT.jar library-service-1.0-SNAPSHOT.jar
 ENTRYPOINT ["java", "-jar", "library-service-1.0-SNAPSHOT.jar"]
 
 # 开放端口 8060
-EXPOSE 8060
+EXPOSE 8090
