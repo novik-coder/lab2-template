@@ -11,4 +11,4 @@ COPY target/discovery-service-1.0-SNAPSHOT.jar discovery-service-1.0-SNAPSHOT.ja
 ENTRYPOINT ["java", "-jar", "discovery-service-1.0-SNAPSHOT.jar"]
 
 # 开放端口 8761
-EXPOSE 8060
+EXPOSE 8761
