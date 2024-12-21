@@ -30,7 +30,7 @@ services:
       dockerfile: Dockerfile
     container_name: eureka-server
     ports:
-      - "8060:8060"
+      - "8761:8761"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
     networks:
@@ -78,7 +78,7 @@ services:
       dockerfile: Dockerfile
     container_name: library-service
     ports:
-      - "8090:8090"
+      - "8060:8060"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
